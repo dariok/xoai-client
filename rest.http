@@ -1,0 +1,5 @@
+GET http://localhost:8080/exist/restxq/xoai/oai.openedition.org%2Ftest?verb=ListRecords&set=journals:jtei&metadataPrefix=mets
+
+###
+
+GET https://oai.openedition.org/?verb=ListRecords&set=journals:jtei&metadataPrefix=mets

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package 
-  xmlns="http://expath.org/ns/pkg" name="https://ulb.tu-darmstadt.de//xoai"
+  xmlns="http://expath.org/ns/pkg" name="https://ulb.tu-darmstadt.de/ns/xoai"
   abbrev="xoai" version="0.1.0" spec="1.0">
   <title>An OAI-PMH client in XQuery</title>
   <dependency processor="http://exist-db.org" semver-min="5.0.0"/>
