@@ -2,32 +2,42 @@ xquery version "3.1";
 
 module namespace xoai="https://ulb.tu-darmstadt.de/ns/xoai";
 
+declare namespace oai    = "http://www.openarchives.org/OAI/2.0/";
+declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 
-
+import module namespace hc      = "http://expath.org/ns/http-client"   at "java:org.expath.exist.HttpClientModule";
 
 declare
   %rest:GET
-  %rest:path("xoai/{$request}")
-  %rest:query-param("verb", "{$verb}", "GetRecord")
+  %rest:path("xoai/listRecords")
+  %rest:query-param("url", "{$url}", "")
   %rest:query-param("set", "{$set}", "")
-  %rest:query-param("identifier", "{$identifier}", "")
-  function xoai:getOAI ( $request as xs:string, $verb as xs:string*, $set as xs:string*, $identifier as xs:string* )  {
-    let $url := util:unescape-uri($request, "utf-8"),
-        $id := util:unescape-uri($identifier, "utf-8")
-    
-    return switch ( $verb )
-      case "ListRecords"
-        return xoai:ListRecords($url, $set)
-      case "GetRecord"
-        return xoai:GetRecord($url, $id)
-      default return <error>Unknown verb: {$verb}</error>
+  function xoai:listRecords ( $url as xs:string*, $set as xs:string*) as element() {
+  let $host := util:unescape-uri($url, "utf-8"),
+      $results := xoai:requestListRecords($host, $set, "")
+  
+  return
+    <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+      { $results[1]/oai:responseDate, $results[1]/oai:request }
+      <ListRecords>
+        { $results//oai:record }
+      </ListRecords>
+    </OAI-PMH>
 };
 
-declare function xoai:ListRecords ( $url, $set ) {
-  true()
-};
-
-declare function xoai:GetRecord ( $url, $identifier ) {
-  true()
+declare %private function xoai:requestListRecords ( $host as xs:string*, $set as xs:string*, $token as xs:string* ) as element()* {
+  let $requestUrl := if ( string-length($token) gt 0 )
+    then $host || "?verb=ListRecords&amp;resumptionToken=" || $token
+    else $host || "?verb=ListRecords&amp;set=" || $set || "&amp;metadataPrefix=mets"
+  
+  let $request := <hc:request method="GET" href="{$requestUrl}" />,
+      $response := hc:send-request($request)/oai:OAI-PMH,
+      $newToken := $response//oai:resumptionToken
+  
+  return if ( $newToken )
+    then ($response, xoai:requestListRecords($host, "", $newToken))
+    else $response
 };

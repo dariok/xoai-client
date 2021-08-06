@@ -1,4 +1,4 @@
-GET http://localhost:8080/exist/restxq/xoai/oai.openedition.org%2Ftest?verb=ListRecords&set=journals:jtei&metadataPrefix=mets
+GET http://localhost:8080/exist/restxq/xoai/listRecords?url=https:%2F%2Foai.openedition.org&set=journals:jtei&metadataPrefix=mets
 
 ###
 
